@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ci:
+    name: Lint, testes e build
+    runs-on: ubuntu-latest
+
+    # Banco PostgreSQL real para os testes de integração
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: teamtasks
+          POSTGRES_PASSWORD: teamtasks
+          POSTGRES_DB: teamtasks_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U teamtasks"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      TEST_DATABASE_URL: postgresql://teamtasks:teamtasks@localhost:5432/teamtasks_test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Formatação
+        run: npm run format:check
+
+      - name: Checagem de tipos
+        run: npm run typecheck
+
+      - name: Testes (unitários e integração)
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Documentação OpenAPI atualizada
+        run: |
+          npm run docs:export
+          git diff --exit-code docs/openapi.json
+        env:
+          DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
+          JWT_SECRET: apenas-para-gerar-a-documentacao-com-32-caracteres
