@@ -1,0 +1,6 @@
+coverage
+dist
+docs/openapi.json
+drizzle/meta
+node_modules
+package-lock.json

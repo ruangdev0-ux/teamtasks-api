@@ -1,0 +1,22 @@
+# Banco de dados para desenvolvimento local.
+# Uso: docker compose up -d
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: teamtasks-postgres
+    environment:
+      POSTGRES_USER: teamtasks
+      POSTGRES_PASSWORD: teamtasks
+      POSTGRES_DB: teamtasks
+    ports:
+      - '5432:5432'
+    volumes:
+      - teamtasks-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U teamtasks']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  teamtasks-data:

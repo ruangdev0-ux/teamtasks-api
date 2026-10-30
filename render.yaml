@@ -1,0 +1,24 @@
+# Blueprint do Render (plano gratuito). O banco PostgreSQL fica no Neon (plano gratuito).
+# As variáveis marcadas com sync: false são preenchidas no painel do Render, nunca aqui.
+services:
+  - type: web
+    name: teamtasks-api
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm run db:migrate:prod && npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: '22'
+      - key: JWT_EXPIRES_IN
+        value: 1h
+      - key: BCRYPT_ROUNDS
+        value: '10'
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
